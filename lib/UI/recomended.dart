@@ -19,7 +19,7 @@ late String MovieRating;
                 Text(snapshot.error.toString()),
                 ElevatedButton(onPressed: () {}, child: const Text("Retry"))]);
         } else if (snapshot.hasData) {
-          return buildNewRecomendedContainer(snapshot.data!.results!);
+          return buildNewRecomendedContainer(snapshot.data!.results!,context);
         } else {
           return const Center(child: CircularProgressIndicator());
         }
@@ -28,30 +28,32 @@ late String MovieRating;
 
   }
 
-  buildNewRecomendedContainer(List<TopRatedResults> results) {
+  buildNewRecomendedContainer(List<TopRatedResults> results,BuildContext context) {
     return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height*0.24,
       color: AppColors.MoviesContainerColor,
-      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                "Recomended",
-                style: AppStyle.ListTitle,
-              )),
+          Text(
+            "Recommended",
+            style: AppStyle.ListTitle,
+          ),
           const SizedBox(height: 8), // Spacing between title and list
-          buildMoviesList(results),
+          buildMoviesList(results,context),
         ],
       ),
     );
   }
 
-  buildMoviesList(List<TopRatedResults> results) {
+
+
+  buildMoviesList(List<TopRatedResults> results,BuildContext context) {
     List<Widget> recomended_results=results.map((result) => buildMoviePreview(result)).toList();
     return Container(
-      height: 200,
+      height: MediaQuery.of(context).size.height*0.20,
+      width: MediaQuery.of(context).size.width,
       color: AppColors.MoviesContainerColor,
       child: ListView.builder(
         itemCount: recomended_results.length,
@@ -59,12 +61,9 @@ late String MovieRating;
         itemBuilder: (context, index) {
           return InkWell(
             onTap: () {},
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Stack(
-                alignment: Alignment.topLeft,
-                children: [buildMoviePreview(results[index]), buildBookmark()],
-              ),
+            child: Stack(
+              alignment: Alignment.topLeft,
+              children: [buildMoviePreview(results[index]), buildBookmark()],
             ),
           );
         },
@@ -84,59 +83,61 @@ late String MovieRating;
  Widget buildMoviePreview(TopRatedResults ratedResults) {
     return Column(
       children: [
-        Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              width: 120,
-              height: 130,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8.0),
-                  image:  DecorationImage(
-                      image: NetworkImage("${ApiManager.BaseUrl}${ratedResults.posterPath}"),
-                      fit: BoxFit.cover)),
-            ),
-            Container(color: AppColors.RatingsContainer,
-              child: Column(
-                children: [
-                  Container(color: AppColors.RatingsContainer,
-                    child: Row(children: [
-                      Icon(Icons.star, color: Colors.yellow, size: 20),
-                      SizedBox(width: 5),
-                      Text(
-                        "${ratedResults.voteAverage}",
-                        style: AppStyle.FeaturedMovieDetailLine,
-                      ), SizedBox(width: 70)
-                    ]),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10),
+          width: 120,
+          height: 130,
+          decoration: BoxDecoration(
+              image:  DecorationImage(
+                  image: NetworkImage("${ApiManager.BaseUrl}${ratedResults.posterPath}"),
+                  fit: BoxFit.cover)),
+        ),
+        Container(
+          width: 120,
+          color: AppColors.RatingsContainer,
+          child: Column(
+            children: [
+              Container(color: AppColors.RatingsContainer,
+                child: Row(children: [
+                  Icon(Icons.star, color: Colors.yellow, size: 20),
+                  SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      "${ratedResults.voteAverage}",
+                      style: AppStyle.FeaturedMovieDetailLine,
+                    ),
+                  ),
+                ]),
 
-                  ),
-                  SizedBox(height: 2,),
-                  Container(color: AppColors.RatingsContainer,
-                    child: Row(children: [
-                      Text(
-                        "${ratedResults.title}",
-                        style: AppStyle.FeaturedMovieDetailLine,
-                      ), SizedBox(width: 60)
-                    ]),
-                  ),
-                  SizedBox(height: 2,),
-                  Container(color: AppColors.RatingsContainer,
-                    child: Row(children: [
-                      Text(
-                        "${ratedResults.releaseDate}",
-                        style: AppStyle.FeaturedMovieDetailLine,
-                      ),
-
-                      SizedBox(width: 35)
-                    ]),
-                  ),
-                  SizedBox(height: 2,)
-                ],
               ),
-            )
-          ],
-        )
+              SizedBox(height: 2,),
+              Container(color: AppColors.RatingsContainer,
+                child: Row(children: [
+                  Expanded(
+                    child: Text(overflow: TextOverflow.ellipsis,
+                      "${ratedResults.title}",
+                      style: AppStyle.FeaturedMovieDetailLine,
+                    ),
+                  ),
+                ]),
+              ),
+              SizedBox(height: 2,),
+              Container(color: AppColors.RatingsContainer,
+                child: Row(children: [
+                  Expanded(
+                    child: Text(
+                      "${ratedResults.releaseDate}",
+                      style: AppStyle.FeaturedMovieDetailLine,
+                    ),
+                  ),
 
+
+                ]),
+              ),
+              SizedBox(height: 2,)
+            ],
+          ),
+        )
       ],
     );
   }

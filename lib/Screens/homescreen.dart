@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:movies/Data/Model/Upcoming_source.dart';
 import 'package:movies/Data/Model/upcoming_results.dart';
@@ -9,9 +10,9 @@ import '../UI/Featured.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
+
     return Column(
       children: [
         FeaturedMovie(),
@@ -31,7 +32,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               );
             } else if (snapshot.hasData) {
-              return buildNewReleasesStack(snapshot.data!.results!);
+              return buildNewReleasesStack(snapshot.data!.results!,context);
             } else {
               return const Center(child: CircularProgressIndicator());
             }
@@ -56,40 +57,39 @@ class HomeScreen extends StatelessWidget {
   }
 
 
-  Stack buildNewReleasesStack(List<UpcomingResults> results) {
+  Stack buildNewReleasesStack(List<UpcomingResults> results,BuildContext context) {
     return Stack(
       children: [
-        buildNewReleasesContainer(results),
+        buildNewReleasesContainer(results,context),
       ],
     );
   }
 
-  buildNewReleasesContainer(List<UpcomingResults> results) {
+  buildNewReleasesContainer(List<UpcomingResults> results,BuildContext context) {
     return Container(
       color: AppColors.MoviesContainerColor,
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                "New Releases",
-                style: AppStyle.ListTitle,
-              )),
+          Text(
+            "New Releases",
+            style: AppStyle.ListTitle,
+          ),
           const SizedBox(height: 8), // Spacing between title and list
-          buildMoviesList(results),
+          buildMoviesList(results,context),
         ],
       ),
     );
   }
 
-  buildMoviesList(List<UpcomingResults> results) {
+  buildMoviesList(List<UpcomingResults> results,BuildContext context) {
     List<Widget> UpcomingMovies = results
         .map((UpcomingResults) => buildContainer(UpcomingResults))
         .toList();
     return Container(
-      height: 170,
+      height: MediaQuery.of(context).size.height*0.20,
+      width: MediaQuery.of(context).size.width,
       color: AppColors.MoviesContainerColor,
       child: ListView.builder(
         itemCount: results.length,
@@ -98,7 +98,7 @@ class HomeScreen extends StatelessWidget {
           return InkWell(
             onTap: () {},
             child: Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.symmetric(horizontal: 3),
               child: Stack(
                 alignment: Alignment.topLeft,
                 children: [buildContainer(results[index]), buildBookmark()],
@@ -115,9 +115,8 @@ class HomeScreen extends StatelessWidget {
 
 
   Widget buildContainer(UpcomingResults UpcomingResults) => Container(
-    margin: const EdgeInsets.symmetric(horizontal: 10),
+    margin: const EdgeInsets.only(left:10,right: 10,bottom: 10),
     width: 120,
-    height: 150,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.0),
             image: DecorationImage(
@@ -126,17 +125,4 @@ class HomeScreen extends StatelessWidget {
       );
 
 
-  //
-  // buildMoviePreview() {
-  //   return Container(
-  //     margin: const EdgeInsets.symmetric(horizontal: 10),
-  //     width: 120,
-  //     height: 150,
-  //     decoration: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(8.0),
-  //         image: const DecorationImage(
-  //             image: AssetImage("assets/images/deadpool.png"),
-  //             fit: BoxFit.cover)),
-  //   );
-  // }
 }
