@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:movies/Data/Model/Toprated_source.dart';
+import 'package:movies/Data/Model/toprated_results.dart';
+import 'package:movies/Data/api_manager.dart';
 import 'package:movies/Utilties/app_colors.dart';
 import 'package:movies/Utilties/app_style.dart';
 
 class Recomended extends StatelessWidget {
-  const Recomended({super.key});
-
+   Recomended({super.key});
+late String MovieRating;
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        buildNewReleasesContainer(),
-      ],
+    return FutureBuilder(
+      future: ApiManager.getTopRated(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Column(
+              children: [
+                Text(snapshot.error.toString()),
+                ElevatedButton(onPressed: () {}, child: const Text("Retry"))]);
+        } else if (snapshot.hasData) {
+          return buildNewRecomendedContainer(snapshot.data!.results!);
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
     );
+
   }
 
-  buildNewReleasesContainer() {
+  buildNewRecomendedContainer(List<TopRatedResults> results) {
     return Container(
       color: AppColors.MoviesContainerColor,
       padding: const EdgeInsets.all(8),
@@ -28,18 +42,19 @@ class Recomended extends StatelessWidget {
                 style: AppStyle.ListTitle,
               )),
           const SizedBox(height: 8), // Spacing between title and list
-          buildMoviesList(),
+          buildMoviesList(results),
         ],
       ),
     );
   }
 
-  buildMoviesList() {
+  buildMoviesList(List<TopRatedResults> results) {
+    List<Widget> recomended_results=results.map((result) => buildMoviePreview(result)).toList();
     return Container(
       height: 200,
       color: AppColors.MoviesContainerColor,
       child: ListView.builder(
-        itemCount: 7,
+        itemCount: recomended_results.length,
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
           return InkWell(
@@ -48,7 +63,7 @@ class Recomended extends StatelessWidget {
               padding: const EdgeInsets.all(10.0),
               child: Stack(
                 alignment: Alignment.topLeft,
-                children: [buildMoviePreview(), buildBookmark()],
+                children: [buildMoviePreview(results[index]), buildBookmark()],
               ),
             ),
           );
@@ -66,73 +81,63 @@ class Recomended extends StatelessWidget {
     );
   }
 
-  buildMoviePreview() {
+ Widget buildMoviePreview(TopRatedResults ratedResults) {
     return Column(
       children: [
         Column(
-        children: [
-    Container(
-    margin: const EdgeInsets.symmetric(horizontal: 10),
-    width: 120,
-    height: 130,
-    decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(8.0),
-    image: const DecorationImage(
-    image: AssetImage("assets/images/pablo.png"),
-    fit: BoxFit.cover)),
-    ),
-    Container(color: AppColors.RatingsContainer,
-      child: Column(
-        children: [
-          Container(color: AppColors.RatingsContainer,
-            child: Row(children: [
-              Icon(Icons.star, color: Colors.yellow, size: 20),
-              SizedBox(width: 5),
-              Text(
-                "rating",
-                style: AppStyle.FeaturedMovieDetailLine,
-              ), SizedBox(width: 70)
-            ]),
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              width: 120,
+              height: 130,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                  image:  DecorationImage(
+                      image: NetworkImage("${ApiManager.BaseUrl}${ratedResults.posterPath}"),
+                      fit: BoxFit.cover)),
+            ),
+            Container(color: AppColors.RatingsContainer,
+              child: Column(
+                children: [
+                  Container(color: AppColors.RatingsContainer,
+                    child: Row(children: [
+                      Icon(Icons.star, color: Colors.yellow, size: 20),
+                      SizedBox(width: 5),
+                      Text(
+                        "${ratedResults.voteAverage}",
+                        style: AppStyle.FeaturedMovieDetailLine,
+                      ), SizedBox(width: 70)
+                    ]),
 
-          ),
-          SizedBox(height: 2,),
-          Container(color: AppColors.RatingsContainer,
-            child: Row(children: [
-              Text(
-                "movie name",
-                style: AppStyle.FeaturedMovieDetailLine,
-              ),SizedBox(width: 60)
-            ]),
-          ),
-          SizedBox(height: 2,),
-          Container(color: AppColors.RatingsContainer,
-            child: Row(children: [
-              Text(
-                "date",
-                style: AppStyle.FeaturedMovieDetailLine,
+                  ),
+                  SizedBox(height: 2,),
+                  Container(color: AppColors.RatingsContainer,
+                    child: Row(children: [
+                      Text(
+                        "${ratedResults.title}",
+                        style: AppStyle.FeaturedMovieDetailLine,
+                      ), SizedBox(width: 60)
+                    ]),
+                  ),
+                  SizedBox(height: 2,),
+                  Container(color: AppColors.RatingsContainer,
+                    child: Row(children: [
+                      Text(
+                        "${ratedResults.releaseDate}",
+                        style: AppStyle.FeaturedMovieDetailLine,
+                      ),
+
+                      SizedBox(width: 35)
+                    ]),
+                  ),
+                  SizedBox(height: 2,)
+                ],
               ),
-              SizedBox(width: 10),
-              Text(
-                "R",
-                style: AppStyle.FeaturedMovieDetailLine,
-              ),
-              SizedBox(width: 10),
-              Text(
-                "duration",
-                style: AppStyle.FeaturedMovieDetailLine,
-              )
-              ,SizedBox(width: 35)
-            ]),
-          ),
-          SizedBox(height: 2,)
-        ],
-      ),
-    )
+            )
+          ],
+        )
+
       ],
-    )
-
-        ],
     );
-
   }
 }
