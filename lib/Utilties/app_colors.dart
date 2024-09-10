@@ -8,5 +8,6 @@ class AppColors{
   static const Color MoviesContainerColor=Color(0xff282A28);
   static const Color BookMark=Color(0xff514F4F);
   static const Color RatingsContainer=Color(0xff343534);
+  static const Color AppBarColor=Color(0xff1D1E1D);
 
 }
