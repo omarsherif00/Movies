@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:movies/Data/Model/Morelikethis_source.dart';
 import 'package:movies/Data/Model/Movie_detail_source.dart';
 import 'package:movies/Data/Model/Toprated_source.dart';
 import 'package:movies/Data/Model/popular_source.dart';
@@ -54,6 +55,19 @@ abstract class ApiManager {
         if(MovieDetailsResponse.statusCode>=200 && MovieDetailsResponse.statusCode<300){
           Map json=jsonDecode(MovieDetailsResponse.body) as Map;
           MovieDetailSource response=MovieDetailSource.fromJson(json);
+          print(movie_id);
+         return response;
+        }else{
+           throw "something went wrong";
+        }
+  }
+  static Future<MoreLikeThisSource> getMoreLikeThis() async{
+    Response MoreLikeThisResponse= await get( Uri.parse(
+        'https://api.themoviedb.org/3/movie/$movie_id/similar?api_key=$Apikey'));
+
+        if(MoreLikeThisResponse.statusCode>=200 && MoreLikeThisResponse.statusCode<300){
+          Map json=jsonDecode(MoreLikeThisResponse.body) as Map;
+          MoreLikeThisSource response=MoreLikeThisSource.fromJson(json);
           print(movie_id);
          return response;
         }else{

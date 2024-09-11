@@ -1,7 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:movies/Data/Model/movie_arguments.dart';
 import 'package:movies/Data/Model/popular_results.dart';
 import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Screens/movie_details.dart';
 import 'package:movies/Utilties/app_style.dart';
 
 class FeaturedMovie extends StatelessWidget {
@@ -40,7 +42,9 @@ class FeaturedMovie extends StatelessWidget {
         itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
           final popularResults = results[itemIndex];
           return InkWell(
-            onTap: () {}
+            onTap: () {
+              MovieDetailsPage(context,results[itemIndex]);
+            }
           ,
             child: Container(
               height: height,
@@ -56,7 +60,7 @@ class FeaturedMovie extends StatelessWidget {
                           image: DecorationImage(
                             fit: BoxFit.fill,
                             image: NetworkImage(
-                                "https://image.tmdb.org/t/p/w500${popularResults.backdropPath}"),
+                                "${ApiManager.BaseUrl}${popularResults.backdropPath}"),
                           ),
                         ),
                       ),
@@ -141,7 +145,13 @@ class FeaturedMovie extends StatelessWidget {
     );
   }
 
-
+   MovieDetailsPage(BuildContext context,PopularResults popularResults) {
+     List<int>? GenreList=popularResults.genreIds;
+     Navigator.pushNamed(context, MovieDetails.routeName,
+         arguments: MovieArguments(
+             MovieId: "${popularResults.id}",
+             genres: GenreList!.map((id) => id.toString()).toList()));
+   }
 
 
 

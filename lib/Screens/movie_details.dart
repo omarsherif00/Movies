@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:movies/Data/Model/Morelikethis_source.dart';
 import 'package:movies/Data/Model/Movie_detail_source.dart';
+import 'package:movies/Data/Model/morelikethis_results.dart';
 import 'package:movies/Data/Model/movie_arguments.dart';
 import 'package:movies/Data/Model/movie_genres.dart';
 import 'package:movies/Data/api_manager.dart';
@@ -123,6 +125,7 @@ class MovieDetails extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             maxLines: 10,
                           ),
+                          Row(children: [Icon(Icons.star,color: Colors.yellow,),Text("${movieDetailSource.voteAverage}",style: TextStyle(fontSize: 20,color: Colors.white,fontWeight: FontWeight.w600),)],)
                         ],
                       ),
                     )
@@ -133,11 +136,26 @@ class MovieDetails extends StatelessWidget {
           ),
           SizedBox(
             height: 20,
-          ),
-          Container(
-            width: width,
-            child: buildNewRecomendedContainer(context),
-          )
+          ),FutureBuilder(
+              future: ApiManager.getMoreLikeThis(),
+              builder:(context, snapshot) {
+                if (snapshot.hasError) {
+                  return Column(
+                    children: [
+                      Text(snapshot.error.toString()),
+                      ElevatedButton(onPressed: () {}, child: Text("Retry"))
+                    ],
+                  );
+                } else if (snapshot.hasData) {
+                  return Container(
+                    width: width,
+                    child: buildNewRecomendedContainer(context,snapshot.data!.results!),
+                  );
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              }, ),
+
         ]),
       ),
     );
@@ -154,7 +172,7 @@ class MovieDetails extends StatelessWidget {
                     color: AppColors.Icon_TextColor)));
   }
 
-  buildNewRecomendedContainer(BuildContext context) {
+  buildNewRecomendedContainer(BuildContext context,List<MoreLikeThisResults> results) {
     return Container(
       width: MediaQuery.of(context).size.width,
       color: AppColors.MoviesContainerColor,
@@ -166,26 +184,28 @@ class MovieDetails extends StatelessWidget {
             style: AppStyle.ListTitle,
           ),
           const SizedBox(height: 8), // Spacing between title and list
-          buildMoviesList(context),
+          buildMoviesList(context,results),
         ],
       ),
     );
   }
 
-  buildMoviesList(BuildContext context) {
+  buildMoviesList(BuildContext context,List<MoreLikeThisResults> results) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.25,
       width: MediaQuery.of(context).size.width,
       color: AppColors.MoviesContainerColor,
       child: ListView.builder(shrinkWrap: true,
-        itemCount: 10,
+        itemCount: results.length,
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
           return InkWell(
-            onTap: () {},
+            onTap: () {
+              MovieDetailsPage(context,results[index]);
+            },
             child: Stack(
               alignment: Alignment.topLeft,
-              children: [buildMoviePreview(), buildBookmark()],
+              children: [buildMoviePreview(results[index]), buildBookmark()],
             ),
           );
         },
@@ -202,7 +222,7 @@ class MovieDetails extends StatelessWidget {
     );
   }
 
-  Widget buildMoviePreview() {
+  Widget buildMoviePreview(MoreLikeThisResults moreLikeThisResults) {
     return Column(
       children: [
         Expanded(
@@ -211,7 +231,7 @@ class MovieDetails extends StatelessWidget {
             width: 120,
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: AssetImage("assets/images/dora.png"),
+                    image: NetworkImage("${ApiManager.BaseUrl}${moreLikeThisResults.posterPath}"),
                     fit: BoxFit.cover)),
           ),
         ),
@@ -227,7 +247,7 @@ class MovieDetails extends StatelessWidget {
                   SizedBox(width: 5),
                   Expanded(
                     child: Text(
-                      "rate",
+                      "${moreLikeThisResults.voteAverage}",
                       style: AppStyle.FeaturedMovieDetailLine,
                     ),
                   ),
@@ -242,7 +262,7 @@ class MovieDetails extends StatelessWidget {
                   Expanded(
                     child: Text(
                       overflow: TextOverflow.ellipsis,
-                      "title",
+                      "${moreLikeThisResults.title}",
                       style: AppStyle.FeaturedMovieDetailLine,
                     ),
                   ),
@@ -256,7 +276,7 @@ class MovieDetails extends StatelessWidget {
                 child: Row(children: [
                   Expanded(
                     child: Text(
-                      "2020",
+                      "${moreLikeThisResults.releaseDate}",
                       style: AppStyle.FeaturedMovieDetailLine,
                     ),
                   ),
@@ -271,4 +291,11 @@ class MovieDetails extends StatelessWidget {
       ],
     );
   }
+}
+MovieDetailsPage(BuildContext context,MoreLikeThisResults moreLikeThisResults) {
+  List<int>? GenreList=moreLikeThisResults.genreIds;
+  Navigator.pushReplacementNamed(context, MovieDetails.routeName,
+      arguments: MovieArguments(
+          MovieId: "${moreLikeThisResults.id}",
+          genres: GenreList!.map((id) => id.toString()).toList()));
 }

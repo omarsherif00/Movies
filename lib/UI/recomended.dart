@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:movies/Data/Model/Toprated_source.dart';
+import 'package:movies/Data/Model/movie_arguments.dart';
 import 'package:movies/Data/Model/toprated_results.dart';
 import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Screens/movie_details.dart';
 import 'package:movies/Utilties/app_colors.dart';
 import 'package:movies/Utilties/app_style.dart';
 
@@ -60,7 +62,9 @@ late String MovieRating;
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
           return InkWell(
-            onTap: () {},
+            onTap: () {
+              MovieDetailsPage(context,results[index]);
+            },
             child: Stack(
               alignment: Alignment.topLeft,
               children: [buildMoviePreview(results[index]), buildBookmark()],
@@ -141,4 +145,13 @@ late String MovieRating;
       ],
     );
   }
+
+
+   MovieDetailsPage(BuildContext context,TopRatedResults ratedResults) {
+     List<int>? GenreList=ratedResults.genreIds;
+     Navigator.pushNamed(context, MovieDetails.routeName,
+         arguments: MovieArguments(
+             MovieId: "${ratedResults.id}",
+             genres: GenreList!.map((id) => id.toString()).toList()));
+   }
 }
