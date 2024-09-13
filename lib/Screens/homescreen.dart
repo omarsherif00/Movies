@@ -35,7 +35,7 @@ class HomeScreen extends StatelessWidget {
             } else if (snapshot.hasData) {
               return buildNewReleasesStack(snapshot.data!.results!, context);
             } else {
-              return const Center(child: CircularProgressIndicator());
+              return Expanded(flex:3 ,child: const Center(child: CircularProgressIndicator()));
             }
           },
         ),

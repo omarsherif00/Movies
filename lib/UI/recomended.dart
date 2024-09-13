@@ -23,7 +23,7 @@ late String MovieRating;
         } else if (snapshot.hasData) {
           return buildNewRecomendedContainer(snapshot.data!.results!,context);
         } else {
-          return const Center(child: CircularProgressIndicator());
+          return Expanded(flex: 3,child: const Center(child: CircularProgressIndicator()));
         }
       },
     );

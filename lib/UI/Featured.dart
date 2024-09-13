@@ -26,7 +26,7 @@ class FeaturedMovie extends StatelessWidget {
         } else if (snapshot.hasData) {
           return BuildSlider(height, width,snapshot.data!.results!);
         } else {
-          return const Center(child: CircularProgressIndicator());
+          return Expanded(flex: 3,child: const Center(child: CircularProgressIndicator()));
         }
       },
     );

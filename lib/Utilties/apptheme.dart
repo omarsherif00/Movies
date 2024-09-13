@@ -7,8 +7,8 @@ class AppTheme {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         selectedItemColor: AppColors.SecondryColor,
           unselectedItemColor: AppColors.Icon_TextColor,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         elevation: 50
       ),
       scaffoldBackgroundColor: AppColors.BgColor,

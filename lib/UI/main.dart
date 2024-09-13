@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ApiManager.getMovieDetails();
     return MaterialApp(
       routes: {
         Home.routeName:(_)=>Home(),

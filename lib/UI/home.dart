@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movies/Data/Model/category.dart';
 import 'package:movies/Screens/browse.dart';
 import 'package:movies/Screens/homescreen.dart';
 import 'package:movies/Screens/search.dart';
