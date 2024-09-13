@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movies/Data/Model/category.dart';
+import 'package:movies/Screens/movie_list_screen.dart';
 
 class Browse extends StatelessWidget {
  // Category category;
@@ -25,7 +26,7 @@ class Browse extends StatelessWidget {
          ),
          itemBuilder:(context, index) {
            return InkWell(onTap: () {
-             
+             Navigator.pushNamed(context, MovieListScreen.routeName,arguments: Category.categories[index].Id);
            },
              child:BuildCategoryContainer(Category.categories[index]) );
 

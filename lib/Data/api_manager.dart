@@ -3,6 +3,7 @@ import 'package:movies/Data/Model/Morelikethis_source.dart';
 import 'package:movies/Data/Model/Movie_detail_source.dart';
 import 'package:movies/Data/Model/Search_source.dart';
 import 'package:movies/Data/Model/Toprated_source.dart';
+import 'package:movies/Data/Model/movie_list.dart';
 import 'package:movies/Data/Model/popular_source.dart';
 import 'package:movies/Data/Model/upcoming_source.dart';
 import 'package:http/http.dart';
@@ -62,8 +63,6 @@ abstract class ApiManager {
         MovieDetailsResponse.statusCode < 300) {
       Map json = jsonDecode(MovieDetailsResponse.body) as Map;
       MovieDetailSource response = MovieDetailSource.fromJson(json);
-      print(movie_id);
-      print("${BaseUrl}${response.backdropPath}");
       return response;
     } else {
       throw "something went wrong";
@@ -78,7 +77,6 @@ abstract class ApiManager {
         MoreLikeThisResponse.statusCode < 300) {
       Map json = jsonDecode(MoreLikeThisResponse.body) as Map;
       MoreLikeThisSource response = MoreLikeThisSource.fromJson(json);
-      print(movie_id);
       return response;
     } else {
       throw "something went wrong";
@@ -92,6 +90,20 @@ abstract class ApiManager {
     if (SearchResponse.statusCode >= 200 && SearchResponse.statusCode < 300) {
       Map json = jsonDecode(SearchResponse.body) as Map;
       SearchSource response = SearchSource.fromJson(json);
+      return response;
+    } else {
+      throw "something went wrong";
+    }
+  }
+
+  static Future<MovieListSource> getMovieByCategory(String genreId) async {
+    Response moviesListResponse = await get(Uri.parse(
+        'https://api.themoviedb.org/3/discover/movie?api_key=${Apikey}&with_genres=${genreId}'));
+
+    if (moviesListResponse.statusCode >= 200 && moviesListResponse.statusCode < 300) {
+      Map json = jsonDecode(moviesListResponse.body) as Map;
+      MovieListSource response = MovieListSource.fromJson(json);
+      print(genreId);
       return response;
     } else {
       throw "something went wrong";

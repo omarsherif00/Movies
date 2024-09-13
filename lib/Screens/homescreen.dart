@@ -126,7 +126,7 @@ class HomeScreen extends StatelessWidget {
       );
 
 
-///check el null
+
   MovieDetailsPage(BuildContext context, UpcomingResults upcomingResults) {
     List<int>? GenreList=upcomingResults.genreIds;
     Navigator.pushNamed(context, MovieDetails.routeName,
