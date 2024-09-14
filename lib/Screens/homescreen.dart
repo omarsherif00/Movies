@@ -1,19 +1,28 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:movies/Data/Model/Upcoming_source.dart';
 import 'package:movies/Data/Model/movie_arguments.dart';
 import 'package:movies/Data/Model/upcoming_results.dart';
 import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Data/movie_dm.dart';
+import 'package:movies/Providers/list_provider.dart';
 import 'package:movies/Screens/movie_details.dart';
+import 'package:movies/UI/firebase.dart';
 import 'package:movies/UI/recomended.dart';
 import 'package:movies/Utilties/app_colors.dart';
 import 'package:movies/Utilties/app_style.dart';
+import 'package:provider/provider.dart';
 import '../UI/Featured.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  // List<MovieDm> movielist=[];
+  HomeScreen({super.key});
+
+  late ListProvider listProvider;
 
   @override
   Widget build(BuildContext context) {
+    listProvider = Provider.of(context);
     return Column(
       children: [
         FeaturedMovie(),
@@ -35,7 +44,9 @@ class HomeScreen extends StatelessWidget {
             } else if (snapshot.hasData) {
               return buildNewReleasesStack(snapshot.data!.results!, context);
             } else {
-              return Expanded(flex:3 ,child: const Center(child: CircularProgressIndicator()));
+              return Expanded(
+                  flex: 3,
+                  child: const Center(child: CircularProgressIndicator()));
             }
           },
         ),
@@ -47,13 +58,29 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  buildBookmark() {
-    return IconButton(
-      onPressed: () {},
-      icon: const Icon(Icons.bookmark_add),
-      color: AppColors.BookMark,
-      iconSize: 35,
-    );
+  buildBookmark(UpcomingResults upcomingResults) {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              FirebaseStorage.SetDataInStorage(
+                  "${upcomingResults.id}",
+                  "${upcomingResults.title}",
+                  "${upcomingResults.releaseDate}",
+                  "${upcomingResults.backdropPath}");
+              listProvider.getDataFromStorage();
+            },
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 8.0, right: 8, bottom: 8, top: 1),
+              child: Image.asset(
+                'assets/images/bookmark.png',
+              ),
+            ),
+          ),
+        ]);
   }
 
   Stack buildNewReleasesStack(
@@ -105,7 +132,10 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 3),
               child: Stack(
                 alignment: Alignment.topLeft,
-                children: [buildContainer(results[index]), buildBookmark()],
+                children: [
+                  buildContainer(results[index]),
+                  buildBookmark(results[index])
+                ],
               ),
             ),
           );
@@ -125,13 +155,32 @@ class HomeScreen extends StatelessWidget {
                 fit: BoxFit.cover)),
       );
 
-
-
   MovieDetailsPage(BuildContext context, UpcomingResults upcomingResults) {
-    List<int>? GenreList=upcomingResults.genreIds;
+    List<int>? GenreList = upcomingResults.genreIds;
     Navigator.pushNamed(context, MovieDetails.routeName,
         arguments: MovieArguments(
             MovieId: "${upcomingResults.id}",
             genres: GenreList!.map((id) => id.toString()).toList()));
   }
+
+  ///el id byt7at sa7
+// SetDataInStorage(UpcomingResults upcomingResults){
+//   CollectionReference collectionReference=FirebaseFirestore.instance.collection(MovieDm.collectionName);
+//   DocumentReference documentReference=collectionReference.doc();
+//   MovieDm movieDm=MovieDm(movie_id: "${upcomingResults.id}", doc_id: documentReference.id);
+//   documentReference.set(movieDm.tojson());
+//
+// }
+//
+// getDataFromStorage() async{
+//   CollectionReference collectionReference=FirebaseFirestore.instance.collection(MovieDm.collectionName);
+//   QuerySnapshot querySnapshot=await collectionReference .get();
+//   List<QueryDocumentSnapshot> documents=querySnapshot.docs;
+//   movielist=documents.map((doc) {
+//     Map <String,dynamic> json=doc.data() as Map<String,dynamic>;
+//     return MovieDm.fromjson(json);
+//   }
+//   ).toList();
+//   print(movielist);
+// }
 }

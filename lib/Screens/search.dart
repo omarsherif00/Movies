@@ -3,9 +3,12 @@
 import 'package:movies/Data/Model/movie_arguments.dart';
   import 'package:movies/Data/Model/search_results.dart';
   import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Providers/list_provider.dart';
 import 'package:movies/Screens/movie_details.dart';
+import 'package:movies/UI/firebase.dart';
   import 'package:movies/Utilties/app_colors.dart';
   import 'package:movies/Utilties/app_style.dart';
+import 'package:provider/provider.dart';
 
   class Search extends StatefulWidget {
     Search({super.key});
@@ -17,8 +20,10 @@ import 'package:movies/Screens/movie_details.dart';
   class _SearchState extends State<Search> {
     TextEditingController _searchController = TextEditingController();
   SearchSource? searchSource;
+  late ListProvider listProvider;
     @override
     Widget build(BuildContext context) {
+      listProvider=Provider.of(context);
       return Scaffold(
         appBar: buildAppBar(),
         body: searchSource==null || searchSource!.results==null || searchSource!.results!.isEmpty?
@@ -76,36 +81,58 @@ import 'package:movies/Screens/movie_details.dart';
     }
 
     BuildMovieContainer(BuildContext context,SearchResults searchResults) {
-     return Column(
-       crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+     return Stack(
+       children: [
+         Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * .33,
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height * .09,
-                decoration: BoxDecoration(image: DecorationImage(
-                    image: NetworkImage("${ApiManager.BaseUrl}${searchResults.backdropPath}"))),
-              ),SizedBox(width: 12,),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                  Text("${searchResults.title}",style: TextStyle(color: Colors.white,fontSize: 14),overflow: TextOverflow.ellipsis,),
-                  Text("${searchResults.releaseDate}",style: TextStyle(color: AppColors.Icon_TextColor,fontSize: 12)),
-                ],),
-              )
+              Row(
+                children: [
+                  Container(
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width * .33,
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height * .09,
+                    decoration: BoxDecoration(image: DecorationImage(
+                        image: NetworkImage("${ApiManager.BaseUrl}${searchResults.backdropPath}"))),
+                  ),SizedBox(width: 12,),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      Text("${searchResults.title}",style: TextStyle(color: Colors.white,fontSize: 14),overflow: TextOverflow.ellipsis,),
+                      Text("${searchResults.releaseDate}",style: TextStyle(color: AppColors.Icon_TextColor,fontSize: 12)),
+                    ],),
+                  )
+                ],
+              ),
+              Divider(color: Color(0xff707070), thickness: 1, indent: 3, endIndent: 3,)
             ],
           ),
-          Divider(color: Color(0xff707070), thickness: 1, indent: 3, endIndent: 3,)
-        ],
-      );
+         Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             mainAxisAlignment: MainAxisAlignment.start,
+             children: [
+               InkWell(
+                 onTap: () {
+                   FirebaseStorage.SetDataInStorage(
+                       "${searchResults.id}",
+                       "${searchResults.title}",
+                       "${searchResults.releaseDate}",
+                       "${searchResults.backdropPath}");
+                   listProvider.getDataFromStorage();
+                 },
+                 child: Image.asset(
+                   'assets/images/bookmark.png',
+                 ),
+               ),
+             ]),
+       ],
+     );
     }
 
     BuildListView(SearchSource searchSource,BuildContext context) {

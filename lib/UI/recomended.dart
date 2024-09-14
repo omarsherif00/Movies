@@ -3,15 +3,20 @@ import 'package:movies/Data/Model/Toprated_source.dart';
 import 'package:movies/Data/Model/movie_arguments.dart';
 import 'package:movies/Data/Model/toprated_results.dart';
 import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Providers/list_provider.dart';
 import 'package:movies/Screens/movie_details.dart';
+import 'package:movies/UI/firebase.dart';
 import 'package:movies/Utilties/app_colors.dart';
 import 'package:movies/Utilties/app_style.dart';
+import 'package:provider/provider.dart';
 
 class Recomended extends StatelessWidget {
    Recomended({super.key});
 late String MovieRating;
+   late ListProvider listProvider;
   @override
   Widget build(BuildContext context) {
+    listProvider=Provider.of(context);
     return FutureBuilder(
       future: ApiManager.getTopRated(),
       builder: (context, snapshot) {
@@ -67,7 +72,7 @@ late String MovieRating;
             },
             child: Stack(
               alignment: Alignment.topLeft,
-              children: [buildMoviePreview(results[index]), buildBookmark()],
+              children: [buildMoviePreview(results[index]), buildBookmark(results[index])],
             ),
           );
         },
@@ -75,13 +80,28 @@ late String MovieRating;
     );
   }
 
-  buildBookmark() {
-    return IconButton(
-      onPressed: () {},
-      icon: const Icon(Icons.bookmark_add),
-      color: AppColors.BookMark,
-      iconSize: 35,
-    );
+  buildBookmark(TopRatedResults topRatedResults) {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              FirebaseStorage.SetDataInStorage(
+                  "${topRatedResults.id}",
+                  "${topRatedResults.title}",
+                  "${topRatedResults.releaseDate}",
+                  "${topRatedResults.backdropPath}");
+              listProvider.getDataFromStorage();
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0,right: 8,bottom: 8),
+              child: Image.asset(
+                'assets/images/bookmark.png',
+              ),
+            ),
+          ),
+        ]);
   }
 
  Widget buildMoviePreview(TopRatedResults ratedResults) {

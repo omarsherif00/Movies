@@ -1,18 +1,32 @@
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:movies/Data/Model/movie_arguments.dart';
 import 'package:movies/Data/Model/popular_results.dart';
 import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Providers/list_provider.dart';
 import 'package:movies/Screens/movie_details.dart';
+import 'package:movies/UI/firebase.dart';
 import 'package:movies/Utilties/app_style.dart';
+import 'package:provider/provider.dart';
 
-class FeaturedMovie extends StatelessWidget {
-   FeaturedMovie({super.key});
- bool isAdded=false;
+class FeaturedMovie extends StatefulWidget {
+  FeaturedMovie({super.key});
+
+  @override
+  State<FeaturedMovie> createState() => _FeaturedMovieState();
+}
+
+class _FeaturedMovieState extends State<FeaturedMovie> {
+  bool isAdded=false;
+
   List<PopularResults> results=[];
+
+  late ListProvider listProvider;
 
   @override
   Widget build(BuildContext context) {
+    listProvider=Provider.of(context);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     return FutureBuilder(
@@ -38,94 +52,106 @@ class FeaturedMovie extends StatelessWidget {
 
   Widget BuildSlider(double height, double width,List<PopularResults> results) {
     return CarouselSlider.builder(
-        itemCount: results.length,
-        itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
-          final popularResults = results[itemIndex];
-          return InkWell(
-            onTap: () {
-              MovieDetailsPage(context,results[itemIndex]);
-            }
+      itemCount: results.length,
+      itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
+        final popularResults = results[itemIndex];
+        return InkWell(
+          onTap: () {
+            MovieDetailsPage(context,results[itemIndex]);
+          }
           ,
-            child: Container(
-              height: height,
-              width: double.infinity,
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                      Container(
-                        height: height * 0.28,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: NetworkImage(
-                                "${ApiManager.BaseUrl}${popularResults.backdropPath}"),
-                          ),
+          child: Container(
+            height: height,
+            width: double.infinity,
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      height: height * 0.28,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: NetworkImage(
+                              "${ApiManager.BaseUrl}${popularResults.backdropPath}"),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4, left: 175),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Center(
-                              child: Text(
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, left: 175),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: Text(
                                 popularResults.title!,
                                 style: AppStyle.FeaturedMovieTitle
+                            ),
+                          ),
+                          Center(
+                            child: Text(
+                              popularResults.releaseDate!,
+                              style: const TextStyle(
+                                color: Color(0xffB5B4B4),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w400,
                               ),
-                            ),
-                            Center(
-                              child: Text(
-                                popularResults.releaseDate!,
-                                style: const TextStyle(
-                                  color: Color(0xffB5B4B4),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    top: height * 0.12,
-                    left: 20,
-                    child: Container(
-                      width: width * 0.35,
-                      height: height * 0.24,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          image: DecorationImage(
-                            image: NetworkImage(
-                              "https://image.tmdb.org/t/p/w500${popularResults.posterPath}",
-                            ),
-                            fit: BoxFit.cover,
-                          )),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          InkWell(
-                            onTap: () {},
-                            child: Image.asset(
-                              isAdded
-                                  ? 'assets/images/bookmarkchecked.png'
-                                  : 'assets/images/bookmark.png',
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+                Positioned(
+                  top: height * 0.12,
+                  left: 20,
+                  child: Container(
+                    width: width * 0.35,
+                    height: height * 0.24,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        image: DecorationImage(
+                          image: NetworkImage(
+                            "https://image.tmdb.org/t/p/w500${popularResults.posterPath}",
+                          ),
+                          fit: BoxFit.cover,
+                        )),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+
+                              isAdded=true;
+                            });
+                            FirebaseStorage.SetDataInStorage(
+                                "${popularResults.id}",
+                                "${popularResults.title}",
+                                "${popularResults.releaseDate}",
+                                "${popularResults.backdropPath}");
+                            listProvider.getDataFromStorage();
+                            listProvider.getDataFromStorage();
+                          },
+                          child: Image.asset(
+                            isAdded
+                                ? 'assets/images/bookmarkchecked.png'
+                                : 'assets/images/bookmark.png',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        );
+      },
       options: CarouselOptions(
         height: height * 0.38,
         aspectRatio: 16 / 9,
@@ -145,97 +171,11 @@ class FeaturedMovie extends StatelessWidget {
     );
   }
 
-   MovieDetailsPage(BuildContext context,PopularResults popularResults) {
-     List<int>? GenreList=popularResults.genreIds;
-     Navigator.pushNamed(context, MovieDetails.routeName,
-         arguments: MovieArguments(
-             MovieId: "${popularResults.id}",
-             genres: GenreList!.map((id) => id.toString()).toList()));
-   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  //   return Stack(
-  //     children: [
-  //       // Movie poster background
-  //       Container(
-  //         width: double.infinity,
-  //         height: 300, // Adjust height as needed
-  //         decoration: const BoxDecoration(
-  //           image: DecorationImage(
-  //             image: AssetImage("assets/images/doracover.png"), // Replace with your image path
-  //             fit: BoxFit.cover,
-  //           ),
-  //         ),
-  //       ),
-  //
-  //       // Gradient overlay for better text readability
-  //       Container(
-  //         width: double.infinity,
-  //         height: 300,
-  //         decoration: BoxDecoration(
-  //           gradient: LinearGradient(
-  //             colors: [
-  //               Colors.transparent,
-  //               Colors.black.withOpacity(0.6),
-  //             ],
-  //             begin: Alignment.topCenter,
-  //             end: Alignment.bottomCenter,
-  //           ),
-  //         ),
-  //       ),
-  //
-  //       // Play button in the center of the movie poster
-  //       Center(
-  //         child: CircleAvatar(
-  //           radius: 30, // Adjust the size of the play button
-  //           backgroundColor: Colors.white.withOpacity(0.7),
-  //           child: Icon(
-  //             Icons.play_arrow,
-  //             size: 40,
-  //             color: Colors.black,
-  //           ),
-  //         ),
-  //       ),
-  //
-  //       // Movie title and details at the bottom of the image
-  //       Positioned(
-  //         bottom: 20,
-  //         left: 200,
-  //
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.center,
-  //           children: [
-  //             Text(
-  //               "Dora and the Lost City of Gold",
-  //               style: AppStyle.FeaturedMovieTitle
-  //               ),
-  //             const SizedBox(height: 8), // Space between title and details
-  //             Text(
-  //               "2019  PG-13  2h 7m",
-  //               style: AppStyle.FeaturedMovieDetailLine
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //       Positioned(
-  //           bottom: 0,
-  //           left: 0,
-  //           child: Container(height: 200,width: 200,decoration: BoxDecoration(image: DecorationImage(image:AssetImage("assets/images/dora.png"))),))
-  //     ],
-  //   );
-  // }
-
+  MovieDetailsPage(BuildContext context,PopularResults popularResults) {
+    List<int>? GenreList=popularResults.genreIds;
+    Navigator.pushNamed(context, MovieDetails.routeName,
+        arguments: MovieArguments(
+            MovieId: "${popularResults.id}",
+            genres: GenreList!.map((id) => id.toString()).toList()));
+  }
 }

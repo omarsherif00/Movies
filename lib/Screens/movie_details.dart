@@ -89,47 +89,65 @@ class MovieDetails extends StatelessWidget {
               SizedBox(
                 height: height * 0.25,
                 //width: width,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(children: [
-                    Container(
-                      width: width * 0.30,
-                      height: height * 0.45,
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(
-                                  "${ApiManager.BaseUrl}${movieDetailSource.posterPath}"),
-                              fit: BoxFit.cover)),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [SizedBox(
-                          //width: 80,
-                          height: MediaQuery.of(context).size.height*0.03,
-                          child: ListView.builder(scrollDirection: Axis.horizontal,
-                          itemCount: movieDetailSource.genres!.length,
-                              itemBuilder: (context, index) {
-                            return Genrecontainer(movieDetailSource.genres?[index].name?? "");
-                          },
-                          ),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(children: [
+                        Container(
+                          width: width * 0.35,
+                          height: height * 0.45,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(
+                                      "${ApiManager.BaseUrl}${movieDetailSource.posterPath}"),
+                                  fit: BoxFit.cover)),
                         ),
-                          Text(
-                            "${movieDetailSource.overview}",
-                            style: AppStyle.MovieDetailsDescreption.copyWith(
-                                color: AppColors.Icon_TextColor),
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 10,
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [SizedBox(
+                              //width: 80,
+                              height: MediaQuery.of(context).size.height*0.03,
+                              child: ListView.builder(scrollDirection: Axis.horizontal,
+                              itemCount: movieDetailSource.genres!.length,
+                                  itemBuilder: (context, index) {
+                                return Genrecontainer(movieDetailSource.genres?[index].name?? "");
+                              },
+                              ),
+                            ),
+                              Text(
+                                "${movieDetailSource.overview}",
+                                style: AppStyle.MovieDetailsDescreption.copyWith(
+                                    color: AppColors.Icon_TextColor),
+                                softWrap: true,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 10,
+                              ),
+                              Row(children: [Icon(Icons.star,color: Colors.yellow,),Text("${movieDetailSource.voteAverage}",style: TextStyle(fontSize: 20,color: Colors.white,fontWeight: FontWeight.w600),)],)
+                            ],
                           ),
-                          Row(children: [Icon(Icons.star,color: Colors.yellow,),Text("${movieDetailSource.voteAverage}",style: TextStyle(fontSize: 20,color: Colors.white,fontWeight: FontWeight.w600),)],)
-                        ],
-                      ),
-                    )
-                  ]),
+                        )
+                      ]),
+                    ),
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            onTap: () {},
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                'assets/images/bookmark.png',
+                              ),
+                            ),
+                          ),
+                        ]),
+                  ],
                 ),
               )
             ]),
