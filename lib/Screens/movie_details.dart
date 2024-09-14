@@ -5,18 +5,30 @@ import 'package:movies/Data/Model/morelikethis_results.dart';
 import 'package:movies/Data/Model/movie_arguments.dart';
 import 'package:movies/Data/Model/movie_genres.dart';
 import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Data/movie_dm.dart';
+import 'package:movies/Providers/list_provider.dart';
+import 'package:movies/UI/firebase.dart';
 import 'package:movies/Utilties/app_colors.dart';
 import 'package:movies/Utilties/app_style.dart';
+import 'package:provider/provider.dart';
 
-class MovieDetails extends StatelessWidget {
+class MovieDetails extends StatefulWidget {
   MovieDetails({super.key});
-
-  late MovieArguments args;
 
   static const String routeName = "movieDetails";
 
   @override
+  State<MovieDetails> createState() => _MovieDetailsState();
+}
+
+class _MovieDetailsState extends State<MovieDetails> {
+  late MovieArguments args;
+
+late ListProvider listProvider;
+
+  @override
   Widget build(BuildContext context) {
+    listProvider=Provider.of(context);
     args = ModalRoute.of(context)!.settings.arguments as MovieArguments;
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
@@ -42,12 +54,10 @@ class MovieDetails extends StatelessWidget {
 
   Scaffold MovieWidget(double width, double height, BuildContext context,
       MovieDetailSource movieDetailSource) {
-    // List<Widget> GenreWidget = movieDetailSource.genres!
-    //     .map(
-    //       (genre) => Genrecontainer(genre?.name ?? ""),
-    // )
-    //     .toList();
+
+    final isAdded = listProvider.isMovieInWatchlist("${movieDetailSource.id}");
     return Scaffold(
+
       appBar: AppBar(
           centerTitle: true,
           title: Text(
@@ -138,11 +148,32 @@ class MovieDetails extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           InkWell(
-                            onTap: () {},
+                            onTap: () async {
+                              if (isAdded) {
+                                await FirebaseStorage.DeleteData(MovieDm(
+                                    movie_id: "${movieDetailSource.id}",
+                                    doc_id: "${movieDetailSource.id}",
+                                    title: "${movieDetailSource.title}",
+                                    date: "${movieDetailSource.releaseDate}",
+                                    imagepath: "${movieDetailSource.backdropPath}"
+                                ));
+                              } else {
+                                await FirebaseStorage.SetDataInStorage(
+                                    "${movieDetailSource.id}",
+                                    "${movieDetailSource.title}",
+                                    "${movieDetailSource.releaseDate}",
+                                    "${movieDetailSource.backdropPath}"
+                                );
+                              }
+                              await listProvider.getDataFromStorage();
+                              setState(() {}); // Refresh UI
+                            },
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Image.asset(
-                                'assets/images/bookmark.png',
+                                isAdded
+                                    ? 'assets/images/bookmarkchecked.png'
+                                    : 'assets/images/bookmark.png',
                               ),
                             ),
                           ),
@@ -223,7 +254,7 @@ class MovieDetails extends StatelessWidget {
             },
             child: Stack(
               alignment: Alignment.topLeft,
-              children: [buildMoviePreview(results[index]), buildBookmark()],
+              children: [buildMoviePreview(results[index]), buildBookmark(results[index])],
             ),
           );
         },
@@ -231,13 +262,43 @@ class MovieDetails extends StatelessWidget {
     );
   }
 
-  buildBookmark() {
-    return IconButton(
-      onPressed: () {},
-      icon: const Icon(Icons.bookmark_add),
-      color: AppColors.BookMark,
-      iconSize: 35,
-    );
+  buildBookmark(MoreLikeThisResults moreLikeThisResults) {
+    final isAdded = listProvider.isMovieInWatchlist("${moreLikeThisResults.id}");
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () async {
+              if (isAdded) {
+                await FirebaseStorage.DeleteData(MovieDm(
+                    movie_id: "${moreLikeThisResults.id}",
+                    doc_id: "${moreLikeThisResults.id}",
+                    title: "${moreLikeThisResults.title}",
+                    date: "${moreLikeThisResults.releaseDate}",
+                    imagepath: "${moreLikeThisResults.backdropPath}"
+                ));
+              } else {
+                await FirebaseStorage.SetDataInStorage(
+                    "${moreLikeThisResults.id}",
+                    "${moreLikeThisResults.title}",
+                    "${moreLikeThisResults.releaseDate}",
+                    "${moreLikeThisResults.backdropPath}"
+                );
+              }
+              await listProvider.getDataFromStorage();
+              setState(() {}); // Refresh UI
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0,right: 8,bottom: 8),
+              child: Image.asset(
+                isAdded
+                    ? 'assets/images/bookmarkchecked.png'
+                    : 'assets/images/bookmark.png',
+              ),
+            ),
+          ),
+        ]);
   }
 
   Widget buildMoviePreview(MoreLikeThisResults moreLikeThisResults) {
