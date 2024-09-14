@@ -19,5 +19,7 @@ class ListProvider extends ChangeNotifier{
     notifyListeners();
     print(movielist);
   }
-
+   bool isMovieInWatchlist(String id) {
+     return movielist.any((movie) => movie.movie_id == id);
+   }
 }

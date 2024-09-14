@@ -8,8 +8,8 @@ class FirebaseStorage{
 
   static SetDataInStorage(String id,String title,String date, String imagepath){
     CollectionReference collectionReference=FirebaseFirestore.instance.collection(MovieDm.collectionName);
-    DocumentReference documentReference=collectionReference.doc();
-    MovieDm movieDm=MovieDm(title: title,movie_id: id, doc_id: documentReference.id,date: date,imagepath: imagepath);
+    DocumentReference documentReference=collectionReference.doc(id);
+    MovieDm movieDm=MovieDm(title: title,movie_id: id, doc_id: id,date: date,imagepath: imagepath);
     documentReference.set(movieDm.tojson());
 
   }

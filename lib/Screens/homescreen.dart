@@ -14,10 +14,15 @@ import 'package:movies/Utilties/app_style.dart';
 import 'package:provider/provider.dart';
 import '../UI/Featured.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   // List<MovieDm> movielist=[];
   HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   late ListProvider listProvider;
 
   @override
@@ -59,24 +64,39 @@ class HomeScreen extends StatelessWidget {
   }
 
   buildBookmark(UpcomingResults upcomingResults) {
+    final isAdded = listProvider.isMovieInWatchlist("${upcomingResults.id}");
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () {
-              FirebaseStorage.SetDataInStorage(
-                  "${upcomingResults.id}",
-                  "${upcomingResults.title}",
-                  "${upcomingResults.releaseDate}",
-                  "${upcomingResults.backdropPath}");
-              listProvider.getDataFromStorage();
+            onTap: () async {
+              if (isAdded) {
+                await FirebaseStorage.DeleteData(MovieDm(
+                    movie_id: "${upcomingResults.id}",
+                    doc_id: "${upcomingResults.id}",
+                    title: "${upcomingResults.title}",
+                    date: "${upcomingResults.releaseDate}",
+                    imagepath: "${upcomingResults.backdropPath}"
+                ));
+              } else {
+                await FirebaseStorage.SetDataInStorage(
+                    "${upcomingResults.id}",
+                    "${upcomingResults.title}",
+                    "${upcomingResults.releaseDate}",
+                    "${upcomingResults.backdropPath}"
+                );
+              }
+              await listProvider.getDataFromStorage();
+              setState(() {}); // Refresh UI
             },
             child: Padding(
               padding:
                   const EdgeInsets.only(left: 8.0, right: 8, bottom: 8, top: 1),
               child: Image.asset(
-                'assets/images/bookmark.png',
+                isAdded
+                    ? 'assets/images/bookmarkchecked.png'
+                    : 'assets/images/bookmark.png',
               ),
             ),
           ),
@@ -162,25 +182,4 @@ class HomeScreen extends StatelessWidget {
             MovieId: "${upcomingResults.id}",
             genres: GenreList!.map((id) => id.toString()).toList()));
   }
-
-  ///el id byt7at sa7
-// SetDataInStorage(UpcomingResults upcomingResults){
-//   CollectionReference collectionReference=FirebaseFirestore.instance.collection(MovieDm.collectionName);
-//   DocumentReference documentReference=collectionReference.doc();
-//   MovieDm movieDm=MovieDm(movie_id: "${upcomingResults.id}", doc_id: documentReference.id);
-//   documentReference.set(movieDm.tojson());
-//
-// }
-//
-// getDataFromStorage() async{
-//   CollectionReference collectionReference=FirebaseFirestore.instance.collection(MovieDm.collectionName);
-//   QuerySnapshot querySnapshot=await collectionReference .get();
-//   List<QueryDocumentSnapshot> documents=querySnapshot.docs;
-//   movielist=documents.map((doc) {
-//     Map <String,dynamic> json=doc.data() as Map<String,dynamic>;
-//     return MovieDm.fromjson(json);
-//   }
-//   ).toList();
-//   print(movielist);
-// }
 }

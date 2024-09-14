@@ -3,6 +3,7 @@
 import 'package:movies/Data/Model/movie_arguments.dart';
   import 'package:movies/Data/Model/search_results.dart';
   import 'package:movies/Data/api_manager.dart';
+import 'package:movies/Data/movie_dm.dart';
 import 'package:movies/Providers/list_provider.dart';
 import 'package:movies/Screens/movie_details.dart';
 import 'package:movies/UI/firebase.dart';
@@ -81,6 +82,7 @@ import 'package:provider/provider.dart';
     }
 
     BuildMovieContainer(BuildContext context,SearchResults searchResults) {
+      final isAdded = listProvider.isMovieInWatchlist("${searchResults.id}");
      return Stack(
        children: [
          Column(
@@ -118,16 +120,30 @@ import 'package:provider/provider.dart';
              mainAxisAlignment: MainAxisAlignment.start,
              children: [
                InkWell(
-                 onTap: () {
-                   FirebaseStorage.SetDataInStorage(
-                       "${searchResults.id}",
-                       "${searchResults.title}",
-                       "${searchResults.releaseDate}",
-                       "${searchResults.backdropPath}");
-                   listProvider.getDataFromStorage();
+                 onTap: () async {
+                   if (isAdded) {
+                     await FirebaseStorage.DeleteData(MovieDm(
+                         movie_id: "${searchResults.id}",
+                         doc_id: "${searchResults.id}",
+                         title: "${searchResults.title}",
+                         date: "${searchResults.releaseDate}",
+                         imagepath: "${searchResults.backdropPath}"
+                     ));
+                   } else {
+                     await FirebaseStorage.SetDataInStorage(
+                         "${searchResults.id}",
+                         "${searchResults.title}",
+                         "${searchResults.releaseDate}",
+                         "${searchResults.backdropPath}"
+                     );
+                   }
+                   await listProvider.getDataFromStorage();
+                   setState(() {}); // Refresh UI
                  },
                  child: Image.asset(
-                   'assets/images/bookmark.png',
+                   isAdded
+                 ? 'assets/images/bookmarkchecked.png'
+                 : 'assets/images/bookmark.png',
                  ),
                ),
              ]),
